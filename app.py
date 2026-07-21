@@ -160,12 +160,12 @@ elif menu == "📊 Evaluasi Model":
     col1, col2 = st.columns(2)
     with col1:
         st.subheader("Naïve Bayes (Tanpa Chi-Square)")
-        st.metric("Akurasi", "81.47%")
+        st.metric("Akurasi", "82.49%")
         eval1 = {
             "Kelas": ["Negatif", "Netral", "Positif"],
-            "Precision": ["0.76", "0.00", "0.88"],
-            "Recall": ["0.93", "0.00", "0.78"],
-            "F1-Score": ["0.84", "0.00", "0.83"],
+            "Precision": ["0.78", "0.00", "0.88"],
+            "Recall": ["0.92", "0.00", "0.81"],
+            "F1-Score": ["0.84", "0.00", "0.84"],
             "Support": ["189", "18", "187"]
         }
         st.dataframe(pd.DataFrame(eval1), hide_index=True)
@@ -174,9 +174,9 @@ elif menu == "📊 Evaluasi Model":
         st.metric("Akurasi", "83.25%")
         eval2 = {
             "Kelas": ["Negatif", "Netral", "Positif"],
-            "Precision": ["0.78", "0.00", "0.90"],
-            "Recall": ["0.96", "0.00", "0.79"],
-            "F1-Score": ["0.86", "0.00", "0.84"],
+            "Precision": ["0.79", "0.00", "0.91"],
+            "Recall": ["0.96", "0.00", "0.80"],
+            "F1-Score": ["0.86", "0.00", "0.85"],
             "Support": ["189", "18", "187"]
         }
         st.dataframe(pd.DataFrame(eval2), hide_index=True)
