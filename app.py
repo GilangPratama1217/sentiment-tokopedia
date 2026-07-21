@@ -181,11 +181,11 @@ elif menu == "📊 Evaluasi Model":
         }
         st.dataframe(pd.DataFrame(eval2), hide_index=True)
     st.divider()
-    st.success("✅ Chi-Square meningkatkan akurasi sebesar **1.78%** (81.47% → 83.25%)")
+    st.success("✅ Chi-Square meningkatkan akurasi sebesar **1.52%** (82.49% → 84.01%)")
     st.write("### Grafik Perbandingan Akurasi")
     fig, ax = plt.subplots(figsize=(8, 5))
     models = [\'Model 1\\n(Tanpa Chi-Square)\', \'Model 2\\n(Dengan Chi-Square)\']
-    akurasi = [81.47, 83.25]
+    akurasi = [82.49, 84.01]
     colors = [\'#e74c3c\', \'#2ecc71\']
     bars = ax.bar(models, akurasi, color=colors, width=0.4)
     ax.set_ylim(79, 85)
