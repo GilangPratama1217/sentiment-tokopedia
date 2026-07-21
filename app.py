@@ -171,7 +171,7 @@ elif menu == "📊 Evaluasi Model":
         st.dataframe(pd.DataFrame(eval1), hide_index=True)
     with col2:
         st.subheader("Naïve Bayes + Chi-Square")
-        st.metric("Akurasi", "83.25%")
+        st.metric("Akurasi", "84.01%")
         eval2 = {
             "Kelas": ["Negatif", "Netral", "Positif"],
             "Precision": ["0.79", "0.00", "0.91"],
