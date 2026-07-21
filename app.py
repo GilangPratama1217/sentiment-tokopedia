@@ -61,7 +61,7 @@ if menu == "🏠 Beranda":
     col1, col2 = st.columns(2)
     with col1:
         st.subheader("Akurasi Model")
-        st.metric("Naïve Bayes + Chi-Square", "83.25%")
+        st.metric("Naïve Bayes + Chi-Square", "84.01%")
         st.write("**Detail Evaluasi:**")
         eval_data = {
             "Kelas": ["Negatif", "Netral", "Positif"],
