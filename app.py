@@ -65,9 +65,9 @@ if menu == "🏠 Beranda":
         st.write("**Detail Evaluasi:**")
         eval_data = {
             "Kelas": ["Negatif", "Netral", "Positif"],
-            "Precision": ["0.78", "0.00", "0.90"],
-            "Recall": ["0.96", "0.00", "0.79"],
-            "F1-Score": ["0.86", "0.00", "0.84"]
+            "Precision": ["0.79", "0.00", "0.91"],
+            "Recall": ["0.96", "0.00", "0.80"],
+            "F1-Score": ["0.86", "0.00", "0.85"]
         }
         st.dataframe(pd.DataFrame(eval_data), hide_index=True)
     with col2:
