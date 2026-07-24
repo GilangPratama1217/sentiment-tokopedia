@@ -99,7 +99,7 @@ elif menu == "📈 Distribusi Sentimen":
             ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 5,
                     f'{val}\n({pct:.1f}%)', ha='center',
                     fontweight='bold', fontsize=10)
-        ax.set_ylim(0, max(sentimen_count.values) + 150)
+        ax.set_ylim(0, max(sentimen_count.values) + 300)
         ax.grid(axis='y', linestyle='--', alpha=0.5)
         ax.set_axisbelow(True)
         plt.tight_layout()
