@@ -1,4 +1,3 @@
-app_code = '''
 import streamlit as st
 import pandas as pd
 import pickle
@@ -8,6 +7,7 @@ from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 import nltk
 import numpy as np
+import seaborn as sns
 
 nltk.download('stopwords', quiet=True)
 
@@ -26,15 +26,15 @@ stop_words = set(stopwords.words('indonesian'))
 
 def preprocessing(teks):
     teks = teks.lower()
-    teks = re.sub(r\'http\\S+\', \'\', teks)
-    teks = re.sub(r\'@\\w+\', \'\', teks)
-    teks = re.sub(r\'#\\w+\', \'\', teks)
-    teks = re.sub(r\'\\d+\', \'\', teks)
-    teks = re.sub(r\'[^\\w\\s]\', \'\', teks)
-    teks = re.sub(r\'\\s+\', \' \', teks).strip()
+    teks = re.sub(r'http\S+', '', teks)
+    teks = re.sub(r'@\w+', '', teks)
+    teks = re.sub(r'#\w+', '', teks)
+    teks = re.sub(r'\d+', '', teks)
+    teks = re.sub(r'[^\w\s]', '', teks)
+    teks = re.sub(r'\s+', ' ', teks).strip()
     tokens = teks.split()
     tokens = [k for k in tokens if k not in stop_words]
-    return \' \'.join(tokens)
+    return ' '.join(tokens)
 
 st.set_page_config(page_title="Analisis Sentimen Tokopedia", layout="wide")
 st.title("📊 Sistem Analisis Sentimen Ulasan Tokopedia")
@@ -51,12 +51,13 @@ menu = st.sidebar.radio("Pilih Halaman:", [
     "📊 Evaluasi Model"
 ])
 
+# ===== BERANDA =====
 if menu == "🏠 Beranda":
     col1, col2, col3, col4 = st.columns(4)
     col1.metric("Total Data", f"{len(df):,}")
-    col2.metric("Positif", f"{len(df[df.sentimen==\'positif\']):,}")
-    col3.metric("Negatif", f"{len(df[df.sentimen==\'negatif\']):,}")
-    col4.metric("Netral", f"{len(df[df.sentimen==\'netral\']):,}")
+    col2.metric("Positif", f"{len(df[df.sentimen=='positif']):,}")
+    col3.metric("Negatif", f"{len(df[df.sentimen=='negatif']):,}")
+    col4.metric("Netral", f"{len(df[df.sentimen=='netral']):,}")
     st.divider()
     col1, col2 = st.columns(2)
     with col1:
@@ -80,43 +81,54 @@ if menu == "🏠 Beranda":
         }
         st.dataframe(pd.DataFrame(info_data), hide_index=True)
 
+# ===== DISTRIBUSI SENTIMEN =====
 elif menu == "📈 Distribusi Sentimen":
     st.subheader("Distribusi Sentimen Ulasan Tokopedia")
+    sentimen_count = df['sentimen'].value_counts()
     col1, col2 = st.columns(2)
-    sentimen_count = df[\'sentimen\'].value_counts()
     with col1:
-        fig, ax = plt.subplots()
-        ax.bar(sentimen_count.index, sentimen_count.values,
-               color=[\'#2ecc71\', \'#e74c3c\', \'#f39c12\'])
-        ax.set_title("Bar Chart Distribusi Sentimen")
-        ax.set_xlabel("Sentimen")
-        ax.set_ylabel("Jumlah")
-        for i, v in enumerate(sentimen_count.values):
-            ax.text(i, v + 5, str(v), ha=\'center\', fontweight=\'bold\')
+        fig, ax = plt.subplots(figsize=(8, 6))
+        bars = ax.bar(sentimen_count.index, sentimen_count.values,
+                      color=['#e34948', '#eda100', '#1baf7a'], width=0.5)
+        ax.set_title("Grafik Distribusi Data per Kelas Sentimen",
+                     fontsize=13, fontweight='bold')
+        ax.set_xlabel("Kelas Sentimen", fontsize=12)
+        ax.set_ylabel("Jumlah Ulasan", fontsize=12)
+        for bar, val in zip(bars, sentimen_count.values):
+            pct = (val / len(df)) * 100
+            ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 5,
+                    f'{val}\n({pct:.1f}%)', ha='center',
+                    fontweight='bold', fontsize=10)
+        ax.set_ylim(0, max(sentimen_count.values) + 150)
+        ax.grid(axis='y', linestyle='--', alpha=0.5)
+        ax.set_axisbelow(True)
+        plt.tight_layout()
         st.pyplot(fig)
     with col2:
         fig, ax = plt.subplots()
         ax.pie(sentimen_count.values, labels=sentimen_count.index,
-               autopct=\'%1.1f%%\', colors=[\'#2ecc71\', \'#e74c3c\', \'#f39c12\'])
+               autopct='%1.1f%%', colors=['#e34948', '#eda100', '#1baf7a'])
         ax.set_title("Pie Chart Distribusi Sentimen")
         st.pyplot(fig)
 
+# ===== WORDCLOUD =====
 elif menu == "☁️ WordCloud":
     st.subheader("WordCloud per Sentimen")
     pilihan = st.selectbox("Pilih Sentimen:", ["positif", "negatif", "netral"])
-    teks_gabung = \' \'.join(df[df[\'sentimen\']==pilihan][\'content_clean\'].tolist())
+    teks_gabung = ' '.join(df[df['sentimen']==pilihan]['content_clean'].tolist())
     if teks_gabung.strip():
-        wc = WordCloud(width=800, height=400, background_color=\'white\',
-                       colormap=\'Greens\' if pilihan==\'positif\'
-                       else \'Reds\' if pilihan==\'negatif\' else \'Blues\').generate(teks_gabung)
+        wc = WordCloud(width=800, height=400, background_color='white',
+                       colormap='Greens' if pilihan=='positif'
+                       else 'Reds' if pilihan=='negatif' else 'Blues').generate(teks_gabung)
         fig, ax = plt.subplots(figsize=(12, 5))
-        ax.imshow(wc, interpolation=\'bilinear\')
-        ax.axis(\'off\')
+        ax.imshow(wc, interpolation='bilinear')
+        ax.axis('off')
         ax.set_title(f"WordCloud Sentimen {pilihan.capitalize()}", fontsize=16)
         st.pyplot(fig)
     else:
         st.warning("Tidak ada data untuk sentimen ini.")
 
+# ===== PREDIKSI REAL-TIME =====
 elif menu == "🔍 Prediksi Real-Time":
     st.subheader("Prediksi Sentimen Ulasan Baru")
     teks_input = st.text_area("Masukkan ulasan Tokopedia:",
@@ -143,16 +155,18 @@ elif menu == "🔍 Prediksi Real-Time":
         else:
             st.warning("Masukkan teks ulasan terlebih dahulu!")
 
+# ===== DATA ULASAN =====
 elif menu == "📋 Data Ulasan":
     st.subheader("Data Ulasan Tokopedia")
     filter_sentimen = st.multiselect("Filter Sentimen:",
-                                      options=[\'positif\', \'negatif\', \'netral\'],
-                                      default=[\'positif\', \'negatif\', \'netral\'])
-    df_filter = df[df[\'sentimen\'].isin(filter_sentimen)]
+                                      options=['positif', 'negatif', 'netral'],
+                                      default=['positif', 'negatif', 'netral'])
+    df_filter = df[df['sentimen'].isin(filter_sentimen)]
     st.write(f"Menampilkan {len(df_filter):,} ulasan")
-    st.dataframe(df_filter[[\'content\', \'sentimen\', \'score\']].reset_index(drop=True),
+    st.dataframe(df_filter[['content', 'sentimen', 'score']].reset_index(drop=True),
                  height=400)
 
+# ===== EVALUASI MODEL =====
 elif menu == "📊 Evaluasi Model":
     st.subheader("Evaluasi dan Perbandingan Model")
     st.markdown("Perbandingan performa model **Naïve Bayes tanpa Chi-Square** dengan **Naïve Bayes + Chi-Square** pada data uji.")
@@ -182,59 +196,59 @@ elif menu == "📊 Evaluasi Model":
         st.dataframe(pd.DataFrame(eval2), hide_index=True)
     st.divider()
     st.success("✅ Chi-Square meningkatkan akurasi sebesar **1.52%** (82.49% → 84.01%)")
+
+    # Bar chart perbandingan akurasi
     st.write("### Grafik Perbandingan Akurasi")
-    fig, ax = plt.subplots(figsize=(8, 5))
-    models = [\'Model 1\\n(Tanpa Chi-Square)\', \'Model 2\\n(Dengan Chi-Square)\']
+    fig, ax = plt.subplots(figsize=(8, 6))
+    models = ['Model 1\n(Tanpa Chi-Square)', 'Model 2\n(Dengan Chi-Square)']
     akurasi = [82.49, 84.01]
-    colors = [\'#e74c3c\', \'#2ecc71\']
-    bars = ax.bar(models, akurasi, color=colors, width=0.4)
-    ax.set_ylim(79, 85)
-    ax.set_ylabel("Akurasi (%)")
-    ax.set_title("Perbandingan Akurasi Model 1 vs Model 2")
+    colors = ['#e34948', '#1baf7a']
+    bars = ax.bar(models, akurasi, color=colors, width=0.5)
+    ax.set_ylim(79, 86)
+    ax.set_ylabel("Akurasi (%)", fontsize=12)
+    ax.set_title("Perbandingan Akurasi Model 1 vs Model 2",
+                 fontsize=13, fontweight='bold')
     for bar, val in zip(bars, akurasi):
         ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.05,
-                f\'{val}%\', ha=\'center\', fontweight=\'bold\')
+                f'{val}%', ha='center', fontweight='bold', fontsize=11)
+    ax.grid(axis='y', linestyle='--', alpha=0.5)
+    ax.set_axisbelow(True)
+    plt.tight_layout()
     st.pyplot(fig)
     st.divider()
+
+    # Confusion Matrix
     st.write("### Confusion Matrix")
     col1, col2 = st.columns(2)
-    try:
-        import seaborn as sns
-        with col1:
-            st.write("**Model 1: Tanpa Chi-Square**")
-            cm1 = np.array([
-                [176, 0, 13],
-                [14,  0,  4],
-                [41,  0, 146]
-            ])
-            fig, ax = plt.subplots(figsize=(5, 4))
-            sns.heatmap(cm1, annot=True, fmt=\'d\', cmap=\'Blues\',
-                        xticklabels=[\'negatif\', \'netral\', \'positif\'],
-                        yticklabels=[\'negatif\', \'netral\', \'positif\'], ax=ax)
-            ax.set_xlabel("Prediksi")
-            ax.set_ylabel("Aktual")
-            ax.set_title("Confusion Matrix Model 1")
-            st.pyplot(fig)
-        with col2:
-            st.write("**Model 2: Dengan Chi-Square**")
-            cm2 = np.array([
-                [182, 0,  7],
-                [14,  0,  4],
-                [39,  0, 148]
-            ])
-            fig, ax = plt.subplots(figsize=(5, 4))
-            sns.heatmap(cm2, annot=True, fmt=\'d\', cmap=\'Greens\',
-                        xticklabels=[\'negatif\', \'netral\', \'positif\'],
-                        yticklabels=[\'negatif\', \'netral\', \'positif\'], ax=ax)
-            ax.set_xlabel("Prediksi")
-            ax.set_ylabel("Aktual")
-            ax.set_title("Confusion Matrix Model 2")
-            st.pyplot(fig)
-    except ImportError:
-        st.warning("Library seaborn tidak tersedia.")
-'''
-
-with open('app.py', 'w') as f:
-    f.write(app_code)
-
-print("app.py berhasil diupdate!")
+    with col1:
+        st.write("**Model 1: Tanpa Chi-Square**")
+        cm1 = np.array([
+            [173, 0, 16],
+            [13,  0,  5],
+            [35,  0, 152]
+        ])
+        fig, ax = plt.subplots(figsize=(5, 4))
+        sns.heatmap(cm1, annot=True, fmt='d', cmap='Blues',
+                    xticklabels=le.classes_,
+                    yticklabels=le.classes_, ax=ax)
+        ax.set_xlabel("Prediksi")
+        ax.set_ylabel("Aktual")
+        ax.set_title("Confusion Matrix Model 1")
+        plt.tight_layout()
+        st.pyplot(fig)
+    with col2:
+        st.write("**Model 2: Dengan Chi-Square**")
+        cm2 = np.array([
+            [181, 0,  8],
+            [12,  0,  6],
+            [37,  0, 150]
+        ])
+        fig, ax = plt.subplots(figsize=(5, 4))
+        sns.heatmap(cm2, annot=True, fmt='d', cmap='Greens',
+                    xticklabels=le.classes_,
+                    yticklabels=le.classes_, ax=ax)
+        ax.set_xlabel("Prediksi")
+        ax.set_ylabel("Aktual")
+        ax.set_title("Confusion Matrix Model 2")
+        plt.tight_layout()
+        st.pyplot(fig)
